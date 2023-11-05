@@ -1,0 +1,49 @@
+Write a PL/SQL block of code using parameterized Cursor, 
+that will merge the data available in the newly created table Cust_New with the data available in the table Cust_Old. 
+If the data in the first table already exist in the second table then that data should be skipped.
+
+CREATE TABLE Cust_New (ID NUMBER, Name VARCHAR2(10), City VARCHAR2(10), Salary NUMBER);
+CREATE TABLE Cust_Old (ID NUMBER, Name VARCHAR2(10), City VARCHAR2(10), Salary NUMBER);
+
+BEGIN
+INSERT INTO Cust_New VALUES (1, 'Ajay', 'Pune', 20000);
+INSERT INTO Cust_New VALUES (2, 'Ramesh', 'Pune', 15000);
+INSERT INTO Cust_New VALUES (3, 'Umesh', 'Pune', 40000);
+INSERT INTO Cust_New VALUES (4, 'Ram', 'Pune', 25000);
+END;
+
+select * from Cust_New;
+
+select * from Cust_Old;
+
+--Merge new data into old
+
+DECLARE
+v_id NUMBER;
+v_name VARCHAR2(10);
+v_city VARCHAR2(10);
+v_salary NUMBER;
+v_exists NUMBER;
+
+CURSOR c_new_customers IS
+SELECT ID, Name, City, Salary
+FROM Cust_New;
+
+BEGIN
+FOR cust_rec IN c_new_customers LOOP
+-- Check if the data already exists in Cust_Old
+	SELECT COUNT(*) INTO v_exists
+	FROM Cust_Old
+	WHERE ID = cust_rec.ID
+	AND Name = cust_rec.Name
+	AND City = cust_rec.City
+	AND Salary = cust_rec.Salary;
+-- If it doesn't exist, insert into Cust_Old
+	IF v_exists = 0 THEN
+		INSERT INTO Cust_Old (ID, Name, City, Salary)
+		VALUES (cust_rec.ID, cust_rec.Name, cust_rec.City, cust_rec.Salary);
+	END IF;
+END LOOP;
+END;
+
+select * from Cust_Old;

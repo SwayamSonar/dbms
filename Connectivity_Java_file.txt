@@ -1,0 +1,148 @@
+import java.sql.*;
+import java.util.Scanner;
+import java.util.*;
+import java.io.*;
+
+public class JDBCPreparedStatementDemo
+{
+static Connection con;
+static ResultSet rs;
+static PreparedStatement pstmt, pstmt1, pstmt2,pstmt3,pstmt4;
+static Scanner sc= new Scanner(System.in);
+
+public static void main(String args[])
+{
+JDBCPreparedStatementDemo obj = new JDBCPreparedStatementDemo();
+//Creating a scanner object
+String selQuery1="select * from customer";
+String selQuery2="insert into customer values(?,?,?)";
+String selQuery3="update customer set Name=? where id=?";
+String selQuery4="delete from customer where id=?";
+String selQuery5="select * from customer where id=?";
+int ch=1, op;
+try
+{
+//step1 load the driver class
+Class.forName("oracle.jdbc.driver.OracleDriver");
+
+//step2 create the connection object
+con=DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe","system","password");
+
+//step3 create the statement object
+pstmt=con.prepareStatement(selQuery1);
+pstmt1=con.prepareStatement(selQuery2);
+pstmt2=con.prepareStatement(selQuery3);
+pstmt3=con.prepareStatement(selQuery4);
+pstmt4=con.prepareStatement(selQuery5);
+do
+{
+System.out.println("\nWhich operation you want to do?");
+System.out.println("1. Display a table");
+System.out.println("2. Insert a record");
+System.out.println("3. Delete a record");
+System.out.println("4. Update a record");
+System.out.println("5. Search a record");
+System.out.println("\nEnter your Choice: ");
+ch = sc.nextInt();
+sc.nextLine();
+switch(ch){
+case 1:obj.display();
+break;
+case 2:
+obj.insert();
+break;
+case 3:
+obj.delete();
+break;
+case 4:
+obj.update();
+break;
+case 5:
+obj.search();
+break;
+} //End of switch
+}while(ch<5);
+
+//step5 close the connection object
+con.close();
+} //End of try block
+
+catch(Exception e)
+{
+System.out.println(e);
+}
+
+} //End of main method
+
+public void display() throws SQLException
+{
+rs=pstmt.executeQuery();
+System.out.println("\nID\tName\tAmount");
+while(rs.next())
+{
+System.out.println(rs.getInt(1)+" "+rs.getString(2)+" "+rs.getInt(3));
+}
+} //End of display() method
+
+public void insert() throws SQLException
+{
+int id, amount;
+String name;
+System.out.println("Enter a id: ");
+id = sc.nextInt();
+sc.nextLine();
+System.out.println("Enter a Name: ");
+name=sc.nextLine();
+System.out.println("Enter a amount: ");
+amount = sc.nextInt();
+pstmt1.setInt(1,id);
+pstmt1.setString(2,name);
+pstmt1.setInt(3,amount);
+pstmt1.executeUpdate();
+System.out.println("Successfully insert a id "+id);
+} //End of display() method
+
+public void update() throws SQLException{
+int id;
+String name;
+System.out.println("Enter a id: ");
+id = sc.nextInt();
+sc.nextLine();
+System.out.println("Enter a Name: ");
+name=sc.nextLine();
+pstmt2.setString(1,name);
+pstmt2.setInt(2,id);
+pstmt2.executeUpdate();
+System.out.println("Successfully update a name of id "+id);
+} //End of display() method
+public void delete() throws SQLException
+{
+int id;
+System.out.println("Enter a id: ");
+id = sc.nextInt();
+sc.nextLine();
+pstmt3.setInt(1,id);
+pstmt3.executeUpdate();
+System.out.println("Successfully delted id "+id);
+} //End of display() method
+
+public void search() throws SQLException
+{
+int id;
+System.out.println("Enter a id: ");
+id = sc.nextInt();
+sc.nextLine();
+pstmt3.setInt(1,id);
+rs=pstmt.executeQuery();
+System.out.println("ID\tName\tAmount");
+if(rs.next()==true)
+{
+	System.out.println(rs.getInt(1)+" "+rs.getString(2)+" "+rs.getInt(3));
+}
+else
+{
+	System.out.println("Invalid ID");
+}
+} //End of display() method
+
+};

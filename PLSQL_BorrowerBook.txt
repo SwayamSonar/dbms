@@ -1,0 +1,58 @@
+create table Borrower(
+Roll_no number not null,
+Name varchar2(20) not null,
+DateofIssue date,
+NameofBook varchar2(20),
+Status varchar2(2)
+);
+
+insert into Borrower values (1,'Aishwarya', TO_DATE('08/09/2002','dd-mm-yyyy'),'CN','A');
+insert into Borrower values (2,'Priyanka', TO_DATE('20/09/2002','dd/mm/yyyy'),'DBMS','A');
+insert into Borrower values (3,'Madhav', TO_DATE('25/10/2002','dd/mm/yyyy'),'TOC','A');
+insert into Borrower values (5,'Shruti', TO_DATE('27/10/2002','dd/mm/yyyy'),'SPOS','A');
+insert into Borrower values (1,'Aishwarya', TO_DATE('03/10/2002','dd/mm/yyyy'),'TOC','A');
+insert into Borrower values (4,'Shree', TO_DATE('25/09/2020','dd/mm/yyyy'),'DBMS','I');
+
+select * from Borrower;
+
+CREATE TABLE Fine(
+Roll_no NUMBER,
+Date_Return DATE,
+Amt NUMBER
+);
+
+create or replace procedure finer(r in number, book_name in varchar2) as
+days number;
+
+begin
+	select trunc(sysdate - DateofIssue) into days
+	from Borrower
+	where Roll_no = r and NameofBook = book_name;
+
+	if days < 15 then
+		insert into Fine values (r, sysdate, 0);
+	elsif days >= 15 and days < 30 then
+		insert into Fine values (r, sysdate, 0);
+		update Fine set Amt = Amt + (days * 5) where Roll_no = r;
+	else
+		days := days - 30;
+		insert into Fine values (r, sysdate, 0);
+		update Fine set Amt = Amt + (days * 50) + 75 where Roll_no = r;
+	end if;
+	update Borrower set Status = 'R' where Roll_no = r and NameofBook = book_name;
+end;
+
+Execution:
+
+BEGIN
+finer(1, 'CN');
+END;
+
+select * from Fine;
+
+BEGIN
+finer(1, 'TOC');
+finer(2, 'DBMS');
+END;
+
+select * from Fine;

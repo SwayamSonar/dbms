@@ -1,0 +1,210 @@
+show dbs
+
+use db_name
+
+show collections
+
+db.createCollection("StudentInfo")
+
+db.StudentInfo.insert({_id:1, name:"Aishu "})
+db.StudentInfo.insert({_id:2, name:"Priya "})
+db.StudentInfo.insert({_id:3, name:"Snehal"})
+db.StudentInfo.insert({_id:4, name:"Pritam"})
+
+--display table
+db.StudentInfo.find()
+
+db.StudentInfo.update({_id:3}, {$set:{name:"Sita "}})
+
+db.StudentInfo.find()
+
+db.StudentInfo.save({ "_id" : 4, "name" : "Gita" })
+
+db.StudentInfo.find()
+
+db.StudentInfo.remove({ "_id" : 4 })
+
+db.StudentInfo.find()
+
+db.StudentInfo.find($and:[{ "_id" : 1, "name" : "Aishu " }]).pretty()
+
+db. StudentInfo.find({$or:[{ "_id" : 1},{"name" : "Aishu "}]}).pretty()
+
+db.Student.aggregate([
+{
+	$match: { Marks: { $gte: 90 } }
+}])
+
+db.Student.aggregate([
+{ $group: {
+	_id: null,
+	totalMarks: { $sum: "$Marks" },
+	avgMarks: { $avg: "$Marks" },
+	minMarks: { $min: "$Marks" },
+	maxMarks: { $max: "$Marks" }
+	}
+}
+])
+
+--counting number of docs in a grp
+db.Student.aggregate([
+{  $group: {
+		_id: "$name",
+		count: { $sum: 1 }
+	   }
+}
+])
+
+db.Student.aggregate([
+{
+	$sort: { Marks: -1 }
+}])
+
+--only 3 records allowed
+db.Student.aggregate([
+{
+	$limit: 3
+}])
+
+--highest n lowest display
+db.Student.aggregate([
+{
+	$sort: { Marks: 1 } // Sort by marks in ascending order
+},
+{
+	$group: {
+		_id: null,
+		highestMarksStudent: { $last: "$name" },
+		highestMarks: { $last: "$Marks" },
+		lowestMarksStudent: { $first: "$name" },
+		lowestMarks: { $first: "$Marks" }
+		}
+}])
+
+--skip rows
+db.Student.aggregate([
+{
+	$skip: 2
+}])
+
+
+MAP REDUCE FUNCTIONS:
+------------------------
+1)Find Average marks
+-------------------------
+var mapFunction = function() {
+emit('average', this.Marks);
+};
+
+var reduceFunction = function(key, values) {
+return Array.sum(values) / values.length;
+};
+
+db.Student.mapReduce(
+mapFunction,
+reduceFunction,
+{ out: { inline: 1 } } )
+
+--------------------------
+2)Calculate Total marks:
+-------------------------
+var mapFunction = function() {
+emit('average', this.Marks);
+};
+
+var reduceFunction = function(key, values) {
+return Array.sum(values);
+};
+
+db.Student.mapReduce(
+mapFunction,
+reduceFunction,
+{ out: { inline: 1 } } )
+
+-----------------------------
+3)Average marks per student
+-----------------------------
+var mapFunction = function() {
+emit(this.name, this.Marks);
+};
+
+var reduceFunction = function(key, values) {
+return Array.sum(values) / values.length;
+};
+
+db.Student.mapReduce(
+mapFunction,
+reduceFunction,
+{ out: { inline: 1 } } )
+
+
+----------------------
+Database_Connectivity
+----------------------
+
+Dependencies:
+const express = require("express");
+const bodyParser = require("body-parser");
+const ejs = require("ejs");
+const _ = require("lodash");
+const mongoose = require('mongoose');
+const alert = require('alert');
+const notifier = require('node-notifier')
+
+
+Login:
+app.post("/login", function(req, res) {
+var login_name=req.body.login_button;
+
+Login.findOne({
+username: req.body.userName,
+password: req.body.passWord
+}, 
+function(err, login) {
+if (!err) {
+if (login) {
+notifier.notify('Login Successful !!!!!!');
+if (login_name==="delete") {
+deleteFun();
+res.redirect("/");
+} 
+else {
+res.render(login_name);
+}
+} 
+else {
+notifier.notify({
+title: 'Login Unsuccessful !!!!!!!',
+message: 'Kindly enter correct username and password'
+});
+if (login_name==="delete") {
+res.redirect("/");
+// res.redirect("/posts/"+requestedPostId1);
+} 
+else {
+res.redirect("/compose");
+}
+}
+}
+})
+});
+
+
+Publish Blog:
+app.get("/posts/:postID", function(req, res) {
+const requestedTitle = req.params.postID;
+Post.findOne({
+_id: requestedTitle
+}, 
+function(err, post) {
+if (!err) {
+res.render("post", {
+title: post.title,
+content: post.content,
+postId: requestedTitle
+});
+}
+});
+});
+
+

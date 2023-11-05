@@ -1,0 +1,51 @@
+CREATE TABLE Library (
+id NUMBER,
+name VARCHAR2(10),
+dept_no NUMBER
+);
+
+begin
+insert into Library values(1,'Aashi',1);
+insert into Library values(2,'Nitin',15);
+insert into Library values(3,'Nishi',8);
+insert into Library values(4,'Aditi',7);
+insert into Library values(5,'Roshni',1);
+end;
+
+select *from Library;
+
+CREATE TABLE Library_Audit (
+operation VARCHAR2(10),
+old_id NUMBER,
+old_name VARCHAR2(10),
+old_dept_no NUMBER
+);
+
+--After Delete trigger
+CREATE OR REPLACE TRIGGER library_delete_trigger
+AFTER DELETE ON Library
+FOR EACH ROW
+BEGIN
+	INSERT INTO Library_Audit (operation, old_id, old_name, old_dept_no)
+	VALUES ('Delete', :old.id, :old.name, :old.dept_no);
+END;
+
+--After update trigger
+CREATE OR REPLACE TRIGGER library_update_trigger
+AFTER UPDATE ON Library
+FOR EACH ROW
+BEGIN
+	INSERT INTO Library_Audit (operation, old_id, old_name, old_dept_no)
+	VALUES ('Update', :old.id, :old.name, :old.dept_no);
+END;
+
+Update Library set name='Aishu' where dept_no=7;
+
+select *from Library_Audit;
+
+delete from Library where id=3;
+
+select *from Library_Audit;
+
+select *from Library;
+
